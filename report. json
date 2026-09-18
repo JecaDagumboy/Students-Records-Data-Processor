@@ -1,0 +1,19 @@
+{
+  "totalStudents": 4,
+  "overallAverage": 88.58,
+  "topPerformingStudent": {
+    "id": 2,
+    "name": "Cris John Gatila",
+    "year": 1,
+    "course": "BSIT",
+    "grades": [95, 92, 94],
+    "enrolled": true,
+    "average": 93.67
+  },
+  "breakdownByCourse": [
+    {
+      "course": "BSIT",
+      "average": 88.58
+    }
+  ]
+}
