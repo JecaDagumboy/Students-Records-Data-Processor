@@ -1,0 +1,34 @@
+[
+    {
+        "id": 1,
+        "name": "Jeca Dagumboy",
+        "year": 2,
+        "course": "BSIT",
+        "grades": [90, 85, 88],
+        "enrolled": true
+    },
+    {
+        "id": 2,
+        "name": "Cris John Gatila",
+        "year": 1,
+        "course": "BSIT",
+        "grades": [95, 92, 94],
+        "enrolled": true
+    },
+    {
+        "id": 3,
+        "name": "Kristine Joy Basa",
+        "year": 3,
+        "course": "BSIT",
+        "grades": [80, 85, 82],
+        "enrolled": false
+    },
+    {
+        "id": 4,
+        "name": "Sheilla Lañojan",
+        "year": 2,
+        "course": "BSIT",
+        "grades": [88, 90, 91],
+        "enrolled": true
+    }
+]
