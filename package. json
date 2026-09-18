@@ -1,0 +1,16 @@
+{
+  "name": "student-records-data-processor",
+  "version": "1.0.0",
+  "description": "Student Records Data Processor using pure JavaScript and Node.js",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "keywords": [
+    "javascript",
+    "nodejs",
+    "student-records"
+  ],
+  "author": "Jeca Dagumboy",
+  "license": "ISC"
+}
