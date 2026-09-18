@@ -1,0 +1,248 @@
+const fs = require("fs");
+
+// Read students.json
+const students = JSON.parse(
+    fs.readFileSync("students.json", "utf8")
+);
+
+// 1. Get average grade
+function getAverageGrade(student) {
+    if (!student.grades || student.grades.length === 0) {
+        return 0;
+    }
+
+    return student.grades.reduce((sum, grade) => sum + grade, 0)
+        / student.grades.length;
+}
+
+// 2. Get top students
+function getTopStudents(students, n) {
+    if (n < 0) {
+        throw new Error("Number of students cannot be negative.");
+    }
+
+    return students
+        .map(student => ({
+            ...student,
+            average: getAverageGrade(student)
+        }))
+        .sort((a, b) => b.average - a.average)
+        .slice(0, n);
+}
+
+// 3. Group students by course
+function groupByCourse(students) {
+    return students.reduce((groups, student) => {
+        if (!groups[student.course]) {
+            groups[student.course] = [];
+        }
+
+        groups[student.course].push(student);
+
+        return groups;
+    }, {});
+}
+
+// 4. Get enrolled count
+function getEnrolledCount(students) {
+    const enrolledStudents = students.filter(
+        student => student.enrolled
+    );
+
+    const notEnrolledStudents = students.filter(
+        student => !student.enrolled
+    );
+
+    return {
+        enrolled: enrolledStudents.length,
+        notEnrolled: notEnrolledStudents.length
+    };
+}
+
+// 5. Find student by name
+function findStudent(students, name) {
+    if (!name) {
+        return null;
+    }
+
+    return students.find(
+        student =>
+            student.name.toLowerCase() === name.toLowerCase()
+    ) || null;
+}
+
+// 6. Get course averages
+function getCourseAverages(students) {
+    const grouped = groupByCourse(students);
+
+    return Object.entries(grouped)
+        .map(([course, courseStudents]) => {
+
+            const grades = courseStudents.flatMap(
+                student => student.grades || []
+            );
+
+            const average = grades.length > 0
+                ? grades.reduce((sum, grade) => sum + grade, 0)
+                    / grades.length
+                : 0;
+
+            return {
+                course: course,
+                average: Number(average.toFixed(2))
+            };
+        })
+        .sort((a, b) => b.average - a.average);
+}
+
+// 7. Export summary
+function exportSummary(students) {
+    const allGrades = students.flatMap(
+        student => student.grades || []
+    );
+
+    const overallAverage = allGrades.length > 0
+        ? allGrades.reduce((sum, grade) => sum + grade, 0)
+            / allGrades.length
+        : 0;
+
+    const topStudent = getTopStudents(students, 1)[0] || null;
+
+    return {
+        totalStudents: students.length,
+        overallAverage: Number(overallAverage.toFixed(2)),
+        topPerformingStudent: topStudent,
+        breakdownByCourse: getCourseAverages(students)
+    };
+}
+
+// MAIN FUNCTION
+function main() {
+
+    console.log("====================================");
+    console.log("       STUDENT RECORD REPORT");
+    console.log("====================================");
+
+    // Total students
+    console.log("\nTotal Students:");
+    console.log(students.length);
+
+    // Enrollment count
+    console.log("\nEnrolled Count:");
+    console.log(getEnrolledCount(students));
+
+    // Top 3 students
+    console.log("\nTop 3 Students:");
+
+    const topStudents = getTopStudents(students, 3);
+
+    if (topStudents.length === 0) {
+        console.log("No students found.");
+    } else {
+        topStudents.forEach((student, index) => {
+            console.log(
+                `${index + 1}. ${student.name} - Average: ${student.average.toFixed(2)}`
+            );
+        });
+    }
+
+    // Course averages
+    console.log("\nAverage Grade by Course:");
+
+    const courseAverages = getCourseAverages(students);
+
+    if (courseAverages.length === 0) {
+        console.log("No course data available.");
+    } else {
+        courseAverages.forEach(course => {
+            console.log(
+                `${course.course}: ${course.average}`
+            );
+        });
+    }
+
+    // Overall average
+    const summary = exportSummary(students);
+
+    console.log("\nOverall Average Grade:");
+    console.log(summary.overallAverage);
+
+    // Complete summary
+    console.log("\nComplete Summary:");
+    console.log(
+        JSON.stringify(summary, null, 2)
+    );
+
+    // Save summary to report.json
+    fs.writeFileSync(
+        "report.json",
+        JSON.stringify(summary, null, 2)
+    );
+
+    console.log("\nreport.json has been created.");
+}
+
+// Run the program
+main();
+
+You also need "students.json"
+
+Example:
+
+[
+    {
+        "id": 1,
+        "name": "Juan Dela Cruz",
+        "year": 2,
+        "course": "BSIT",
+        "grades": [90, 85, 88],
+        "enrolled": true
+    },
+    {
+        "id": 2,
+        "name": "Maria Santos",
+        "year": 1,
+        "course": "BSCS",
+        "grades": [95, 92, 94],
+        "enrolled": true
+    },
+    {
+        "id": 3,
+        "name": "Pedro Reyes",
+        "year": 3,
+        "course": "BSIT",
+        "grades": [80, 85, 82],
+        "enrolled": false
+    },
+    {
+        "id": 4,
+        "name": "Ana Garcia",
+        "year": 2,
+        "course": "BSCS",
+        "grades": [88, 90, 91],
+        "enrolled": true
+    }
+]
+
+Put both files in the same folder:
+
+student-records/
+├── app.js
+└── students.json
+
+Then open the terminal in that folder and run:
+
+node app.js
+
+It will automatically create:
+
+report.json
+
+So your final folder will be:
+
+student-records/
+├── app.js
+├── students.json
+└── report.json
+
+You can then push these files to your GitHub repository.
