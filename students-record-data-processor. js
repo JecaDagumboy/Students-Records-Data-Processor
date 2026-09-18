@@ -1,0 +1,166 @@
+const fs = require("fs");
+
+// Load student records
+const students = JSON.parse(
+    fs.readFileSync("students.json", "utf8")
+);
+
+// Get average grade
+function getAverageGrade(student) {
+    if (!student.grades || student.grades.length === 0) {
+        return 0;
+    }
+
+    return student.grades.reduce(
+        (sum, grade) => sum + grade, 0
+    ) / student.grades.length;
+}
+
+// Get top students
+function getTopStudents(students, n) {
+    if (n < 0) {
+        throw new Error("Number of students cannot be negative.");
+    }
+
+    return students
+        .map(student => ({
+            ...student,
+            average: getAverageGrade(student)
+        }))
+        .sort((a, b) => b.average - a.average)
+        .slice(0, n);
+}
+
+// Group by course
+function groupByCourse(students) {
+    return students.reduce((groups, student) => {
+        if (!groups[student.course]) {
+            groups[student.course] = [];
+        }
+
+        groups[student.course].push(student);
+        return groups;
+    }, {});
+}
+
+// Count enrolled students
+function getEnrolledCount(students) {
+    const enrolled = students.filter(
+        student => student.enrolled
+    );
+
+    const notEnrolled = students.filter(
+        student => !student.enrolled
+    );
+
+    return {
+        enrolled: enrolled.length,
+        notEnrolled: notEnrolled.length
+    };
+}
+
+// Find student by name
+function findStudent(students, name) {
+    if (!name) {
+        return null;
+    }
+
+    return students.find(
+        student =>
+            student.name.toLowerCase() === name.toLowerCase()
+    ) || null;
+}
+
+// Get average grade per course
+function getCourseAverages(students) {
+    const grouped = groupByCourse(students);
+
+    return Object.entries(grouped)
+        .map(([course, courseStudents]) => {
+
+            const grades = courseStudents.flatMap(
+                student => student.grades || []
+            );
+
+            const average = grades.length
+                ? grades.reduce(
+                    (sum, grade) => sum + grade, 0
+                ) / grades.length
+                : 0;
+
+            return {
+                course,
+                average: Number(average.toFixed(2))
+            };
+        })
+        .sort((a, b) => b.average - a.average);
+}
+
+// Create summary
+function exportSummary(students) {
+    const grades = students.flatMap(
+        student => student.grades || []
+    );
+
+    const overallAverage = grades.length
+        ? grades.reduce(
+            (sum, grade) => sum + grade, 0
+        ) / grades.length
+        : 0;
+
+    return {
+        totalStudents: students.length,
+        overallAverage: Number(overallAverage.toFixed(2)),
+        topPerformingStudent:
+            getTopStudents(students, 1)[0] || null,
+        breakdownByCourse: getCourseAverages(students)
+    };
+}
+
+// Main function
+function main() {
+    console.log("=================================");
+    console.log("   STUDENT RECORD DATA PROCESSOR");
+    console.log("=================================");
+
+    console.log("\nTotal Students:", students.length);
+
+    console.log("\nEnrolled Count:");
+    console.log(getEnrolledCount(students));
+
+    console.log("\nTop 3 Students:");
+
+    getTopStudents(students, 3).forEach(
+        (student, index) => {
+            console.log(
+                `${index + 1}. ${student.name} - Average: ${student.average.toFixed(2)}`
+            );
+        }
+    );
+
+    console.log("\nAverage Grade by Course:");
+
+    getCourseAverages(students).forEach(course => {
+        console.log(
+            `${course.course}: ${course.average}`
+        );
+    });
+
+    console.log("\nOverall Average Grade:");
+
+    const summary = exportSummary(students);
+    console.log(summary.overallAverage);
+
+    console.log("\nComplete Summary:");
+    console.log(JSON.stringify(summary, null, 2));
+
+    // Create report.json
+    fs.writeFileSync(
+        "report.json",
+        JSON.stringify(summary, null, 2)
+    );
+
+    console.log("\nreport.json created successfully!");
+}
+
+main();
